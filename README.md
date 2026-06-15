@@ -63,6 +63,10 @@ classDiagram
     Study "N" --> "1" User : pertence a
     Study "N" --> "N" Category : possui
 ```
+---
+
+## 📝 Prototipação de telas
+>https://www.figma.com/design/p8RKVwF1DZxWMTmh2N79Yc/EduNotes-V1?node-id=0-1&t=5KOzhGEuPLVig8wb-1
 
 ---
 
