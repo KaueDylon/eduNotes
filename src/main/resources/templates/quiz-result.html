@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Resultado | EduNote</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>body { font-family: Inter, sans-serif; }</style>
+</head>
+
+<body class="bg-slate-50">
+<div class="flex min-h-screen">
+
+    <!-- SIDEBAR -->
+    <aside class="w-60 bg-slate-100 border-r border-slate-200 flex flex-col">
+        <div class="flex items-center gap-3 p-6">
+            <div class="bg-blue-600 p-2 rounded-lg">
+                <i data-lucide="book-open" class="w-6 h-6 text-white"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-blue-700">EduNote</h1>
+        </div>
+        <div class="px-5">
+            <a href="/studies/new"
+               class="flex items-center justify-center gap-2 bg-orange-500 text-white py-3 rounded-xl font-semibold">
+                <i data-lucide="plus"></i> Nova Nota
+            </a>
+        </div>
+        <nav class="mt-6 px-4 space-y-2">
+            <a href="/dashboard"
+               class="flex items-center gap-3 px-4 py-4 rounded-xl text-slate-700 hover:bg-slate-200 transition">
+                <i data-lucide="layout-dashboard"></i> Dashboard
+            </a>
+        </nav>
+        <div class="mt-auto p-5">
+            <a href="/logout"
+               class="flex items-center justify-center gap-2 border border-red-200 text-red-500 hover:bg-red-50 rounded-xl py-3 transition">
+                <i data-lucide="log-out"></i> Sair
+            </a>
+        </div>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto">
+        <div class="max-w-3xl mx-auto py-14 px-10">
+
+            <!-- Card de pontuação -->
+            <div class="bg-white border border-slate-200 rounded-3xl p-10 text-center shadow-sm mb-12">
+
+                <div class="flex justify-center mb-6">
+                    <div class="bg-orange-100 p-5 rounded-full">
+                        <i data-lucide="trophy" class="w-10 h-10 text-orange-500"></i>
+                    </div>
+                </div>
+
+                <h1 class="text-4xl font-bold text-slate-800 mb-2">Resultado do Quiz</h1>
+                <p class="text-slate-500 mb-8" th:text="'Estudo: ' + ${study.title}"></p>
+
+                <!-- Placar -->
+                <div class="flex items-center justify-center gap-4 mb-6">
+                    <span class="text-7xl font-extrabold text-orange-500" th:text="${score}"></span>
+                    <span class="text-4xl text-slate-300 font-light">/</span>
+                    <span class="text-5xl font-bold text-slate-400" th:text="${total}"></span>
+                </div>
+
+                <!-- Mensagem dinâmica -->
+                <p th:if="${score == total}"
+                   class="text-green-600 font-semibold text-lg mb-8">
+                    🎉 Perfeito! Você acertou tudo!
+                </p>
+                <p th:if="${score >= total * 0.7 and score < total}"
+                   class="text-blue-600 font-semibold text-lg mb-8">
+                    👏 Muito bem! Continue assim!
+                </p>
+                <p th:if="${score < total * 0.7}"
+                   class="text-slate-500 font-semibold text-lg mb-8">
+                    📚 Revise o conteúdo e tente novamente!
+                </p>
+
+                <!-- Barra de progresso -->
+                <div class="w-full h-3 bg-slate-100 rounded-full mb-8">
+                    <div class="h-3 rounded-full transition-all"
+                         th:classappend="${score >= total * 0.7} ? 'bg-green-500' : 'bg-orange-400'"
+                         th:style="'width: ' + ${score * 100 / total} + '%'">
+                    </div>
+                </div>
+
+                <!-- Ações -->
+                <div class="flex justify-center gap-4">
+                    <a th:href="@{/studies/{id}(id=${study.id})}"
+                       class="px-6 py-3 border border-slate-300 rounded-xl hover:bg-slate-100 transition text-slate-600">
+                        Voltar ao Estudo
+                    </a>
+                    <form th:action="@{/ai/quiz/{id}(id=${study.id})}" method="post">
+                        <button type="submit"
+                                class="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition">
+                            Refazer Quiz
+                        </button>
+                    </form>
+                    <a href="/dashboard"
+                       class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition">
+                        Dashboard
+                    </a>
+                </div>
+
+            </div>
+
+            <!-- Gabarito: acertos e erros -->
+            <h2 class="text-2xl font-bold text-slate-800 mb-6">Gabarito</h2>
+
+            <div class="space-y-6">
+
+                <div th:each="item : ${reviewList}"
+                     th:classappend="${item.correct} ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'"
+                     class="border-2 rounded-2xl p-6">
+
+                    <!-- Cabeçalho da questão -->
+                    <div class="flex items-start justify-between gap-4 mb-4">
+                        <div class="flex items-start gap-3">
+                            <span class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
+                                  th:classappend="${item.correct} ? 'bg-green-200 text-green-700' : 'bg-red-200 text-red-700'"
+                                  th:text="${item.index}">
+                            </span>
+                            <p class="font-semibold text-slate-800" th:text="${item.question}"></p>
+                        </div>
+                        <i th:if="${item.correct}"
+                           data-lucide="check-circle"
+                           class="w-6 h-6 text-green-500 flex-shrink-0"></i>
+                        <i th:if="${!item.correct}"
+                           data-lucide="x-circle"
+                           class="w-6 h-6 text-red-400 flex-shrink-0"></i>
+                    </div>
+
+                    <!-- Opções -->
+                    <div class="space-y-2 mb-4 pl-11">
+                        <div th:each="opt : ${item.options.entrySet()}"
+                             class="flex items-center gap-2 text-sm rounded-xl px-3 py-2"
+                             th:classappend="${opt.key == item.correctAnswer} ? 'bg-green-200 text-green-800 font-semibold' :
+                                             (${opt.key == item.givenAnswer and !item.correct} ? 'bg-red-200 text-red-700' : 'text-slate-600')">
+                            <span th:text="${opt.key} + ')'"></span>
+                            <span th:text="${opt.value}"></span>
+                        </div>
+                    </div>
+
+                    <!-- Resumo da resposta -->
+                    <div class="pl-11 flex gap-6 text-sm">
+                        <span class="text-green-700">
+                            ✅ Correta: <strong th:text="${item.correctAnswer}"></strong>
+                        </span>
+                        <span th:if="${!item.correct}" class="text-red-600">
+                            ❌ Sua resposta: <strong th:text="${item.givenAnswer}"></strong>
+                        </span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<script>lucide.createIcons();</script>
+</body>
+</html>
